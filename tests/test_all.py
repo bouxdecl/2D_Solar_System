@@ -1,71 +1,79 @@
 import numpy as np
 import pytest
 
-from solar_system import (
-    gravitational_force,
-    compute_accelerations,
-    update_positions,
-    update_velocities,
-    run_simulation,
-)
+from solar_system.dynamics import gravitational_force, compute_accelerations
+from solar_system.planets import get_planets, PLANETS
+from solar_system.integration import euler_step, rk4_step
 
-# Global constant used for tests
-G = 6.67430e-11
+# --- Dynamics tests ---
 
 def test_gravitational_force_magnitude():
-    """Gravitational force magnitude matches Newton's law."""
-    m1, m2 = 1.0, 2.0
-    r1, r2 = np.array([0,0]), np.array([1,0])
-    f = gravitational_force(m1, m2, r1, r2, G)
-    expected = G*m1*m2 / 1**2
-    assert np.isclose(np.linalg.norm(f), expected)
+    r1 = np.array([0.0, 0.0])
+    r2 = np.array([1.0, 0.0])
+    f = gravitational_force(r1, r2, 1.0, 1.0)
+    expected = 6.67430e-11  # G * m1 * m2 / r^2
+    assert np.allclose(np.linalg.norm(f), expected)
 
 def test_gravitational_force_zero_distance():
-    """Gravitational force is zero at identical positions (avoid singularity)."""
-    f = gravitational_force(1.0, 1.0, np.array([0,0]), np.array([0,0]), G)
-    assert np.allclose(f, [0,0])
+    r1 = np.array([0.0, 0.0])
+    r2 = np.array([0.0, 0.0])
+    with pytest.raises(ValueError):
+        gravitational_force(r1, r2, 1.0, 1.0)
 
 def test_compute_accelerations_two_body_symmetry():
-    """Two equal masses exert equal and opposite accelerations."""
+    positions = np.array([[0.0, 0.0], [1.0, 0.0]])
     masses = np.array([1.0, 1.0])
-    positions = np.array([[0,0],[1,0]])
-    accs = compute_accelerations(positions, masses, G)
-    assert np.allclose(accs[0], -accs[1])
+    acc = compute_accelerations(positions, masses, G=6.67430e-11)
+    # accelerations should be equal in magnitude and opposite
+    assert np.allclose(acc[0], -acc[1])
+    assert np.isclose(np.linalg.norm(acc[0]), np.linalg.norm(acc[1]))
 
-def test_update_positions():
-    """Positions update correctly with constant velocity."""
-    pos = np.array([[0,0]])
-    vel = np.array([[1,0]])
-    new_pos = update_positions(pos, vel, 1.0)
-    assert np.allclose(new_pos, [[1,0]])
+# --- Planets tests ---
 
-def test_update_velocities():
-    """Velocities update correctly with constant acceleration."""
-    vel = np.array([[0,0]])
-    acc = np.array([[1,0]])
-    new_vel = update_velocities(vel, acc, 2.0)
-    assert np.allclose(new_vel, [[2,0]])
+def test_get_planets_output_shapes():
+    names, masses, positions, velocities = get_planets(3)
+    assert len(names) == 3
+    assert masses.shape == (3,)
+    assert positions.shape == (3, 2)
+    assert velocities.shape == (3, 2)
 
-def test_run_simulation_moves_earth():
-    """Earth should move in +y direction after several steps."""
-    masses = np.array([1.989e30, 5.972e24])
-    positions = np.array([[0,0], [1.496e11, 0]])
-    velocities = np.array([[0,0], [0,29780]])
+def test_get_planets_positions_and_velocities():
+    names, masses, positions, velocities = get_planets(2)
+    # Sun at origin
+    assert np.allclose(positions[0], [0, 0])
+    # Planets on x-axis, velocities along y
+    for i in range(1, 2):
+        assert positions[i][1] == 0.0
+        assert velocities[i][0] == 0.0
+        assert velocities[i][1] > 0.0
 
-    # Run simulation and unpack only what is returned
-    # Set record_trajectory=True to get trajectories and CoG
-    pos, vel, traj, cog_positions = run_simulation(
-        masses, positions, velocities, dt=3600, steps=10, G=G, record_trajectory=True
-    )
+# --- Integration tests ---
 
-    # Earth is the second body
-    initial_y = positions[1,1]
-    final_y = pos[1,1]
-    assert final_y > initial_y, "Earth did not move in +y direction"
+def test_euler_step_basic_motion():
+    positions = np.array([[0.0, 0.0]])
+    velocities = np.array([[1.0, 0.0]])
+    masses = np.array([1.0])
+    dt = 0.1
+    new_pos, new_vel = euler_step(positions, velocities, masses, dt, G=6.67430e-11)
+    # Should move roughly in x direction
+    assert new_pos[0][0] > positions[0][0]
+    assert new_pos[0][1] == positions[0][1]
 
-    # Optional: check that trajectories have correct shape
-    assert traj[1].shape == (11, 2), "Trajectory shape is incorrect"
+def test_rk4_step_basic_motion():
+    positions = np.array([[0.0, 0.0]])
+    velocities = np.array([[1.0, 0.0]])
+    masses = np.array([1.0])
+    dt = 0.1
+    new_pos, new_vel = rk4_step(positions, velocities, masses, dt, G=6.67430e-11)
+    assert new_pos[0][0] > positions[0][0]
+    assert new_pos[0][1] == positions[0][1]
 
-    # Optional: check CoG is computed
-    assert cog_positions.shape == (11,2), "CoG positions shape is incorrect"
-
+def test_rk4_vs_euler_small_dt():
+    positions = np.array([[0.0, 0.0]])
+    velocities = np.array([[1.0, 0.0]])
+    masses = np.array([1.0])
+    dt = 1e-6
+    pos_euler, _ = euler_step(positions, velocities, masses, dt, G=6.67430e-11)
+    pos_rk4, _ = rk4_step(positions, velocities, masses, dt, G=6.67430e-11)
+    # With tiny dt, RK4 and Euler should be nearly equal
+    assert np.allclose(pos_euler, pos_rk4, rtol=1e-8, atol=1e-12)
