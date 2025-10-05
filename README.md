@@ -18,8 +18,6 @@ A small Python modular project to simulate a 2D solar system using Newtonian gra
 - Optional center-of-gravity (CoG) plotting.
 - Unit tests using `pytest`.
 
----
-
 ## Usage
 
 Run the simulation from the command line:
@@ -39,28 +37,26 @@ Option | Description | Default
 `--show` | Show plots interactively | False
 `--cog` | Include center-of-gravity subplot in timeseries | False
 
----
 
 ## Project Structure
-
+```
 .
 ├── solar_system
-│   ├── cli.py
-│   ├── dynamics.py
-│   ├── integration.py
-│   ├── planets.py
-│   ├── plot_utils.py
-│   ├── run_simulation.py
-│   └── __pycache__
+│ ├── cli.py
+│ ├── dynamics.py
+│ ├── integration.py
+│ ├── planets.py
+│ ├── plot_utils.py
+│ └── run_simulation.py
 ├── tests
-│   ├── conftest.py
-│   ├── test_all.py
-│   └── __pycache__
+│ ├── conftest.py
+│ └── test_all.py
 ├── LICENSE
 ├── main.py
 ├── README.md
 ├── orbits.png
 └── timeseries.png
+```
 
 ---
 
@@ -78,7 +74,6 @@ source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 pip install numpy matplotlib pytest
 
----
 
 ## Running Tests
 
@@ -97,7 +92,6 @@ For questions or feedback, email me at [leo.bouxdecasson@example.com](mailto:leo
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 Please make sure to update tests as appropriate.
 
----
 
 ## License
 
