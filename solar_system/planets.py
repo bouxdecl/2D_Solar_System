@@ -25,23 +25,33 @@ PLANETS = [
 
 def get_planets(nplanets):
     """
-    Return initial conditions for the first `nplanets` in PLANETS.
+    Return initial conditions for the first `nplanets` in the PLANETS list.
+
+    Each planet is positioned on the x-axis at distance `r` from the origin,
+    with an initial velocity along the +y direction (counterclockwise circular orbit).
 
     Parameters
     ----------
     nplanets : int
-        Number of planets to include (including the Sun).
+        Number of planets to include, counting from the Sun outward.
+        If greater than the number of entries in `PLANETS`, it will be truncated.
 
     Returns
     -------
-    names : list[str]
-        Names of selected planets.
-    masses : ndarray
-        Masses of planets [kg].
-    positions : ndarray
-        Initial 2D positions [m].
-    velocities : ndarray
-        Initial 2D velocities [m/s].
+    names : list of str
+        Names of selected celestial bodies.
+    masses : numpy.ndarray of shape (nplanets,)
+        Masses of selected bodies in kilograms [kg].
+    positions : numpy.ndarray of shape (nplanets, 2)
+        Initial 2D positions of the bodies in meters [m].
+    velocities : numpy.ndarray of shape (nplanets, 2)
+        Initial 2D velocities of the bodies in meters per second [m/s].
+
+    Notes
+    -----
+    - The Sun is always placed at the origin with zero velocity.
+    - Orbital directions assume a flat 2D plane with right-handed coordinates.
+    - This setup neglects mutual perturbations, using approximate circular velocities.
     """
     nplanets = min(nplanets, len(PLANETS))
     subset = PLANETS[:nplanets]
