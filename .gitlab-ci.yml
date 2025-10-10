@@ -1,0 +1,16 @@
+import python.3.12
+
+stages:
+ - test
+
+before_script:
+ - python --version ; pip --version
+ - python -m env venv .venv
+ - source .venv/bin/activate
+ - python -m pip install --upgrade pip
+
+tests:
+ stage: test
+ script:
+  - pip install pytest
+  - python -m pytest
