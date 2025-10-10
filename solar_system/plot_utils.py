@@ -53,6 +53,10 @@ def plot_trajectories(trajectories, labels=None, savefile=None, show=True):
     else:
         plt.close()
 
+
+
+
+
 def plot_timeseries(time, trajectories, labels=None, cog_positions=None,
                     savefile=None, show=True):
     """
