@@ -121,7 +121,7 @@ def plot_timeseries(time, trajectories, labels=None, cog_positions=None,
     fig.tight_layout()
 
     if savefile:
-        plt.savefig(savefile, dpi=150)
+        plt.savefig('./outputs/'+savefile, dpi=150)
     if show:
         plt.show()
     else:
