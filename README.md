@@ -1,6 +1,7 @@
 # 2D Solar System Simulation
 
 A small Python modular project to simulate a 2D solar system using Newtonian gravity.
+
 This is a study project for the master 2 course ScientificSoftware at ENS de Lyon. 
 
 **Author:** Leo Boux de Casson
